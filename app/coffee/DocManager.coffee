@@ -11,8 +11,9 @@ module.exports = DocManager =
 	# migrate this version property to be part of the docs collection, to guarantee
 	# consitency between lines and version when writing/reading, and for a simpler schema.
 	getDoc: (project_id, doc_id, filter = { version: false, inS3:true}, callback = (error, doc) ->) ->
-		if filter? and !filter.inS3?
-			filter.inS3 = true
+		filterContainsFalseValue = _.contains(_.values(filter), false)
+		if !filterContainsFalseValue
+			filter = _.defaults(filter, {inS3: true})
 		MongoManager.findDoc project_id, doc_id, filter, (err, doc)->
 			if err?
 				return callback(err)

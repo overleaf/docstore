@@ -48,6 +48,13 @@ describe "DocManager", ->
 					@MongoManager.findDoc.args[0][2].inS3.should.equal true
 					done()
 
+			it "should not add inS3 if a false filter is passed", (done)->
+				@DocManager.getDoc @project_id, @doc_id, {lines:false}, =>
+					filter = @MongoManager.findDoc.args[0][2]
+					expect(filter.inS3).to.be.undefined
+					expect(filter.lines).to.be.false
+					done()
+
 		describe "when the doc is in the doc collection", ->
 			beforeEach ->
 				@MongoManager.findDoc.yields(null, @doc)
