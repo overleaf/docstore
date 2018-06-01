@@ -24,7 +24,7 @@ pipeline {
     stage('Acceptance Tests') {
       steps {
         withCredentials([file(credentialsId: 'S3_DOCSTORE_TEST_AWS_KEYS_file', variable: 'SECRETS_PATH')]) {
-          sh 'cat ${SECRETS_PATH} && DOCKER_COMPOSE_FLAGS="-f docker-compose.ci.yml" make test_acceptance'
+          sh 'docker-compose -v && docker -v && DOCKER_COMPOSE_FLAGS="-f docker-compose.ci.yml" make test_acceptance'
         }
       }
     }
