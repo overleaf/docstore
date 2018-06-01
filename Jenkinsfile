@@ -3,10 +3,6 @@ String cron_string = BRANCH_NAME == "master" ? "@daily" : ""
 pipeline {
   agent any
   
-  environment {
-    SECRETS_PATH = credentials('S3_DOCSTORE_TEST_AWS_KEYS_file')
-  }
-
   triggers {
     pollSCM('* * * * *')
     cron(cron_string)
@@ -27,7 +23,9 @@ pipeline {
 
     stage('Acceptance Tests') {
       steps {
-        sh 'cat ${SECRETS_PATH} && DOCKER_COMPOSE_FLAGS="-f docker-compose.ci.yml" make test_acceptance'
+        withCredentials([file(credentialsId: 'S3_DOCSTORE_TEST_AWS_KEYS_file', variable: 'SECRETS_PATH')]) {
+          sh 'cat ${SECRETS_PATH} && DOCKER_COMPOSE_FLAGS="-f docker-compose.ci.yml" make test_acceptance'
+        }
       }
     }
 
