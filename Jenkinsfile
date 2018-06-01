@@ -27,7 +27,7 @@ pipeline {
 
     stage('Acceptance Tests') {
       steps {
-        sh 'DOCKER_COMPOSE_FLAGS="-f docker-compose.ci.yml" make test_acceptance'
+        sh 'cat ${SECRETS_PATH} && DOCKER_COMPOSE_FLAGS="-f docker-compose.ci.yml" make test_acceptance'
       }
     }
 
