@@ -23,6 +23,13 @@ if process.env['AWS_ACCESS_KEY_ID']? and process.env['AWS_SECRET_ACCESS_KEY']? a
 		secret: process.env['AWS_SECRET_ACCESS_KEY']
 		bucket: process.env['AWS_BUCKET']
 
+p = '/run/secrets/config.json'
+fs.exists p, ( p_exists ) ->
+        unless p_exists
+            console.log "#{ p } does not exist."
+        else fs.stat p, ( error, stat ) ->
+            console.log "#{ p } exists and is a #{ if stat.isFile() then 'file' else 'directory' }."
+
 try
   config = require('/run/secrets/config.json')
   Settings.docstore.s3 = config['S3_DOCSTORE_TEST_AWS_KEYS']
