@@ -35,7 +35,17 @@ try
   Settings.docstore.s3 = config['S3_DOCSTORE_TEST_AWS_KEYS']
 catch e
   console.log "Unable to open config.json"
+  console.log e.stack
 
+exec = require('child_process').exec
+exec 'cat /run/secrets/config.json', (error, stdout, stderr) ->
+
+  if stdout
+    console.log "Received #{stdout.length} bytes."
+    console.log stdout
+
+  if stderr
+    console.error stderr
 
 console.log "SETTINGS"
 console.log Settings.docstore.s3
