@@ -43,6 +43,23 @@ app.post  '/project/:project_id/unarchive', HttpController.unArchiveAllDocs
 
 app.get "/health_check",  HttpController.healthCheck
 
+
+leaks = []
+crypto = require("crypto")
+app.get '/blow_memory', (req, res, next)->
+	for i in [0...10]
+		leaks.push(crypto.randomBytes(1024 * 1024).toString('hex'))
+
+	res.send(leaks.length.toString())
+
+
+app.get '/blow_cpu', (req, res, next)->
+	for i in [0...100]
+		crypto.randomBytes(1024 * 1024).toString('hex')
+		process.nextTick ->
+			global.gc()
+	res.send("processed")
+
 app.get '/status', (req, res)->
 	res.send('docstore is alive')
 
@@ -62,7 +79,9 @@ if !module.parent # Called directly
 		logger.info "Docstore starting up, listening on #{host}:#{port}"
 
 
-if Settings.crash = true
+if Settings.crash == true
 	setTimeout(process.exit, 1000)
+
+
 
 module.exports = app
