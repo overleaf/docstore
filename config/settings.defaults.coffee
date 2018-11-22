@@ -14,6 +14,7 @@ Settings =
 			project_id: process.env['HEALTH_CHECK_PROJECT_ID']
 
 	max_doc_length: 2 * 1024 * 1024 # 2mb
+	crash: process.env['CRASH'] or false
 
 if process.env['MONGO_CONNECTION_STRING']?
 	Settings.mongo.url = process.env['MONGO_CONNECTION_STRING']

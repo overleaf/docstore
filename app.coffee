@@ -13,6 +13,7 @@ Metrics.event_loop?.monitor(logger)
 
 app = express()
 
+
 app.use Metrics.http.monitor(logger)
 
 app.param 'project_id', (req, res, next, project_id) ->
@@ -59,5 +60,9 @@ if !module.parent # Called directly
 	app.listen port, host, (error) ->
 		throw error if error?
 		logger.info "Docstore starting up, listening on #{host}:#{port}"
+
+
+if Settings.crash = true
+	setTimeout(process.exit, 1000)
 
 module.exports = app
