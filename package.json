@@ -35,7 +35,7 @@
     "bunyan": "~0.22.3",
     "chai": "~1.9.1",
     "mocha": "^4.0.1",
-    "request": "~2.34.0",
+    "request": "~2.47.0",
     "sandboxed-module": "~0.3.0",
     "sinon": "~3.2.1"
   },
