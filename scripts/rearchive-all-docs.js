@@ -1,6 +1,6 @@
 const DocArchiveManager = require('../app/js/DocArchiveManager').promises
 const MongoManager = require('../app/js/MongoManager').promises
-const { getCollection, ObjectId } = require('../app/js/mongodb')
+const { addCollection, db, ObjectId } = require('../app/js/mongodb')
 const minimist = require('minimist')
 
 async function worker(projectId) {
@@ -83,9 +83,8 @@ async function rearchiveAllDocs() {
     console.log(`Stopping at object ID ${endId}`)
   }
 
-  const results = (await getCollection('projects'))
-    .find(query, { _id: 1 })
-    .sort({ _id: 1 })
+  await addCollection('projects')
+  const results = db.projects.find(query, { _id: 1 }).sort({ _id: 1 })
   let jobCount = 0
 
   // keep going until we run out of projects
