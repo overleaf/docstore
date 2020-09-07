@@ -84,7 +84,11 @@ async function rearchiveAllDocs() {
   }
 
   await addCollection('projects')
-  const results = db.projects.find(query, { _id: 1 }).sort({ _id: 1 })
+  const results = db.projects
+    .find(query, {
+      projection: { _id: 1 }
+    })
+    .sort({ _id: 1 })
   let jobCount = 0
 
   // keep going until we run out of projects
