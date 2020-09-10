@@ -28,7 +28,7 @@
     "mongodb": "^3.6.0",
     "settings-sharelatex": "^1.1.0",
     "streamifier": "^0.1.1",
-    "tiny-async-pool": "^1.1.0",
+    "tiny-async-pool": "git+https://github.com/rxaviers/async-pool.git",
     "underscore": "~1.10.2"
   },
   "devDependencies": {
