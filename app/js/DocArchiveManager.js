@@ -74,9 +74,37 @@ async function archiveDoc(projectId, doc) {
 
   const md5 = crypto.createHash('md5').update(json).digest('hex')
   const stream = Streamifier.createReadStream(json)
-  await PersistorManager.sendStream(settings.docstore.bucket, key, stream, {
-    sourceMd5: md5
-  })
+  try {
+    await PersistorManager.sendStream(settings.docstore.bucket, key, stream, {
+      sourceMd5: md5
+    })
+  } catch (err) {
+    // if the file already exists, we should delete it and re-upload from the database
+    // - the file could be present because another process has just uploaded it, or
+    //   because something went wrong previously and it is stale data.
+    // - if the write failed for another reason, we should throw the error
+    if (err instanceof Errors.WriteError) {
+      const exists = await PersistorManager.checkIfObjectExists(
+        settings.docstore.bucket,
+        key
+      )
+      if (exists) {
+        await PersistorManager.deleteObject(settings.docstore.bucket, key)
+        await PersistorManager.sendStream(
+          settings.docstore.bucket,
+          key,
+          stream,
+          {
+            sourceMd5: md5
+          }
+        )
+      } else {
+        throw err
+      }
+    } else {
+      throw err
+    }
+  }
   await MongoManager.markDocAsArchived(doc._id, doc.rev)
 }
 

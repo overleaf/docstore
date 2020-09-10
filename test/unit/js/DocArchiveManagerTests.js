@@ -119,7 +119,8 @@ describe('DocArchiveManager', function () {
       getObjectStream: sinon.stub().resolves(stream),
       sendStream: sinon.stub().resolves(),
       getObjectMd5Hash: sinon.stub().resolves(md5Sum),
-      deleteObject: sinon.stub().resolves()
+      deleteObject: sinon.stub().resolves(),
+      checkIfObjectExists: sinon.stub().resolves(false)
     }
 
     MongoManager = {
@@ -246,6 +247,45 @@ describe('DocArchiveManager', function () {
         await expect(
           DocArchiveManager.promises.archiveDoc(projectId, mongoDocs[0])
         ).to.eventually.be.rejectedWith('null bytes detected')
+      })
+    })
+
+    describe('when the upload fails', function () {
+      const error = new Errors.WriteError('something bad')
+
+      beforeEach(function () {
+        PersistorManager.sendStream.onCall(0).rejects(error)
+      })
+
+      it('it should throw the error', async function () {
+        await expect(
+          DocArchiveManager.promises.archiveDoc(projectId, mongoDocs[0])
+        ).to.eventually.be.rejectedWith(error)
+      })
+
+      describe('when the file already exists', function () {
+        beforeEach(function () {
+          PersistorManager.checkIfObjectExists = sinon.stub().resolves(true)
+        })
+
+        it('should delete the file', async function () {
+          await DocArchiveManager.promises.archiveDoc(projectId, mongoDocs[0])
+          expect(PersistorManager.deleteObject).to.have.been.calledWith(
+            Settings.docstore.bucket,
+            `${projectId}/${mongoDocs[0]._id}`
+          )
+        })
+
+        it('should re-upload the file', async function () {
+          await DocArchiveManager.promises.archiveDoc(projectId, mongoDocs[0])
+          expect(PersistorManager.sendStream).to.have.been.calledTwice
+        })
+
+        it('should not throw an error', async function () {
+          await expect(
+            DocArchiveManager.promises.archiveDoc(projectId, mongoDocs[0])
+          ).to.eventually.be.fulfilled
+        })
       })
     })
   })
