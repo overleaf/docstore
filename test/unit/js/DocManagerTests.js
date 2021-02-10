@@ -429,9 +429,9 @@ describe('DocManager', function () {
         this.callback = sinon.stub().callsFake(done)
         this.lines = ['mock', 'doc', 'lines']
         this.rev = 77
-        this.DocManager.checkDocExists = sinon
+        this.MongoManager.findDoc = sinon
           .stub()
-          .callsArgWith(2, null, true)
+          .yields(null, { _id: ObjectId(this.doc_id) })
         this.MongoManager.markDocAsDeleted = sinon.stub().yields(null)
         this.DocArchiveManager.archiveDocById = sinon.stub().yields(null)
         return this.DocManager.deleteDoc(
@@ -443,7 +443,7 @@ describe('DocManager', function () {
       })
 
       it('should get the doc', function () {
-        return this.DocManager.checkDocExists
+        this.MongoManager.findDoc
           .calledWith(this.project_id, this.doc_id)
           .should.equal(true)
       })
@@ -521,11 +521,29 @@ describe('DocManager', function () {
       })
     })
 
+    describe('when the doc is already deleted', function () {
+      beforeEach(function (done) {
+        this.callback = sinon.stub().callsFake(done)
+        this.MongoManager.findDoc = sinon
+          .stub()
+          .yields(null, { _id: ObjectId(this.doc_id), deleted: true })
+        this.MongoManager.markDocAsDeleted = sinon.stub()
+        this.DocManager.deleteDoc(
+          this.project_id,
+          this.doc_id,
+          'tomato.tex',
+          this.callback
+        )
+      })
+
+      it('should not mark the doc as deleted', function () {
+        this.MongoManager.markDocAsDeleted.called.should.equal(false)
+      })
+    })
+
     return describe('when the doc does not exist', function () {
       beforeEach(function () {
-        this.DocManager.checkDocExists = sinon
-          .stub()
-          .callsArgWith(2, null, false)
+        this.MongoManager.findDoc = sinon.stub().yields(null)
         return this.DocManager.deleteDoc(
           this.project_id,
           this.doc_id,

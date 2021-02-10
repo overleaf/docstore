@@ -291,20 +291,21 @@ module.exports = DocManager = {
     if (callback == null) {
       callback = function (error) {}
     }
-    return DocManager.checkDocExists(project_id, doc_id, function (
-      error,
-      exists
-    ) {
+    const projection = { _id: 1, deleted: true }
+    MongoManager.findDoc(project_id, doc_id, projection, (error, doc) => {
       if (error != null) {
         return callback(error)
       }
-      if (!exists) {
+      if (!doc) {
         return callback(
           new Errors.NotFoundError(
             `No such project/doc to delete: ${project_id}/${doc_id}`
           )
         )
       }
+
+      // deletion is idempotent
+      if (doc.deleted) return callback(null)
 
       if (Settings.docstore.archiveOnSoftDelete) {
         // The user will not read this doc anytime soon. Flush it out of mongo.

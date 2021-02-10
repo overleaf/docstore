@@ -104,6 +104,39 @@ describe('Deleting a doc', function () {
         })
       }, 1000)
     })
+
+    describe('deleting a doc twice', function () {
+      beforeEach('get doc before 2nd DELETE request', function (done) {
+        db.docs.find({ _id: this.doc_id }).toArray((error, docs) => {
+          if (error) return done(error)
+          this.docBefore = docs[0]
+          if (!this.docBefore) return done(new Error('doc not found'))
+          done()
+        })
+      })
+
+      beforeEach('perform 2nd DELETE request', function (done) {
+        DocstoreClient.deleteDoc(this.project_id, this.doc_id, (error, res) => {
+          this.res1 = res
+          done(error)
+        })
+      })
+
+      it('should return success', function () {
+        expect(this.res1.statusCode).to.equal(204)
+      })
+
+      it('should not alter the previous doc state', function (done) {
+        db.docs.find({ _id: this.doc_id }).toArray((error, docs) => {
+          if (error) return done(error)
+          const docAfter = docs[0]
+          if (!docAfter) return done(new Error('doc not found'))
+
+          expect(docAfter).to.deep.equal(this.docBefore)
+          done()
+        })
+      })
+    })
   })
 
   describe('when providing a doc name in the delete request', function () {
