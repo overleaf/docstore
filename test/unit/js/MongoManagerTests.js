@@ -190,17 +190,22 @@ describe('MongoManager', function () {
     })
 
     it('should process the update', function (done) {
+      this.dateBefore = new Date()
       return this.MongoManager.markDocAsDeleted(
         this.project_id,
         this.doc_id,
         undefined,
         (err) => {
+          this.dateAfter = new Date()
           const args = this.db.docs.updateOne.args[0]
           assert.deepEqual(args[0], {
             _id: ObjectId(this.doc_id),
             project_id: ObjectId(this.project_id)
           })
           assert.equal(args[1].$set.deleted, true)
+          expect(args[1].$set)
+            .to.have.property('deletedAt')
+            .and.to.be.within(this.dateBefore, this.dateAfter)
           return done()
         }
       )

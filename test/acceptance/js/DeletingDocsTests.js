@@ -60,10 +60,12 @@ describe('Deleting a doc', function () {
 
   describe('when the doc exists', function () {
     beforeEach(function (done) {
+      this.dateBefore = new Date()
       return DocstoreClient.deleteDoc(
         this.project_id,
         this.doc_id,
         (error, res, doc) => {
+          this.dateAfter = new Date()
           this.res = res
           return done()
         }
@@ -92,6 +94,9 @@ describe('Deleting a doc', function () {
         docs[0]._id.should.deep.equal(this.doc_id)
         docs[0].lines.should.deep.equal(this.lines)
         docs[0].deleted.should.equal(true)
+        expect(docs[0])
+          .to.have.property('deletedAt')
+          .and.to.be.within(this.dateBefore, this.dateAfter)
         return done()
       })
     })

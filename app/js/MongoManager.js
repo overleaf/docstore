@@ -82,7 +82,7 @@ module.exports = MongoManager = {
   },
 
   markDocAsDeleted(project_id, doc_id, name, callback) {
-    const update = { deleted: true }
+    const update = { deleted: true, deletedAt: new Date() }
     if (name) {
       update.name = name
     }
