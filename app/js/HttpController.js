@@ -179,8 +179,9 @@ module.exports = HttpController = {
     }
     const { project_id } = req.params
     const { doc_id } = req.params
+    const { name } = req.query
     logger.log({ project_id, doc_id }, 'deleting doc')
-    return DocManager.deleteDoc(project_id, doc_id, function (error) {
+    DocManager.deleteDoc(project_id, doc_id, name, function (error) {
       if (error != null) {
         return next(error)
       }

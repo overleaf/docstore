@@ -437,6 +437,7 @@ describe('DocManager', function () {
         return this.DocManager.deleteDoc(
           this.project_id,
           this.doc_id,
+          'tomato.tex',
           this.callback
         )
       })
@@ -449,7 +450,7 @@ describe('DocManager', function () {
 
       it('should mark doc as deleted', function () {
         return this.MongoManager.markDocAsDeleted
-          .calledWith(this.project_id, this.doc_id)
+          .calledWith(this.project_id, this.doc_id, 'tomato.tex')
           .should.equal(true)
       })
 
@@ -528,6 +529,7 @@ describe('DocManager', function () {
         return this.DocManager.deleteDoc(
           this.project_id,
           this.doc_id,
+          'blue.tex',
           this.callback
         )
       })

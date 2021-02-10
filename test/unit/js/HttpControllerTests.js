@@ -441,18 +441,30 @@ describe('HttpController', function () {
         project_id: this.project_id,
         doc_id: this.doc_id
       }
-      this.DocManager.deleteDoc = sinon.stub().callsArg(2)
+      this.DocManager.deleteDoc = sinon.stub().yields()
       return this.HttpController.deleteDoc(this.req, this.res, this.next)
     })
 
     it('should delete the document', function () {
       return this.DocManager.deleteDoc
-        .calledWith(this.project_id, this.doc_id)
+        .calledWith(this.project_id, this.doc_id, undefined)
         .should.equal(true)
     })
 
-    return it('should return a 204 (No Content)', function () {
+    it('should return a 204 (No Content)', function () {
       return this.res.sendStatus.calledWith(204).should.equal(true)
+    })
+
+    describe('with a name in the query', function () {
+      beforeEach(function () {
+        this.req.query = { name: 'green.tex' }
+        this.HttpController.deleteDoc(this.req, this.res, this.next)
+      })
+      it('should forward the name', function () {
+        this.DocManager.deleteDoc
+          .calledWith(this.project_id, this.doc_id, 'green.tex')
+          .should.equal(true)
+      })
     })
   })
 

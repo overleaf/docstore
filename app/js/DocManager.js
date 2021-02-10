@@ -287,7 +287,7 @@ module.exports = DocManager = {
     )
   },
 
-  deleteDoc(project_id, doc_id, callback) {
+  deleteDoc(project_id, doc_id, name, callback) {
     if (callback == null) {
       callback = function (error) {}
     }
@@ -318,7 +318,7 @@ module.exports = DocManager = {
         })
       }
 
-      return MongoManager.markDocAsDeleted(project_id, doc_id, callback)
+      MongoManager.markDocAsDeleted(project_id, doc_id, name, callback)
     })
   }
 }

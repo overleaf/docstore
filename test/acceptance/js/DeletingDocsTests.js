@@ -106,6 +106,39 @@ describe('Deleting a doc', function () {
     })
   })
 
+  describe('when providing a doc name in the delete request', function () {
+    beforeEach(function (done) {
+      DocstoreClient.deleteDocWithName(
+        this.project_id,
+        this.doc_id,
+        'wombat.tex',
+        done
+      )
+    })
+
+    it('should insert the doc name into the docs collection', function (done) {
+      db.docs.find({ _id: this.doc_id }).toArray((error, docs) => {
+        if (error) return done(error)
+        expect(docs[0].name).to.equal('wombat.tex')
+        done()
+      })
+    })
+  })
+
+  describe('when providing no doc name in the delete request', function () {
+    beforeEach(function (done) {
+      DocstoreClient.deleteDocWithName(this.project_id, this.doc_id, '', done)
+    })
+
+    it('should not populate the doc name the docs collection', function (done) {
+      db.docs.find({ _id: this.doc_id }).toArray((error, docs) => {
+        if (error) return done(error)
+        expect(docs[0]).to.not.have.property('name')
+        done()
+      })
+    })
+  })
+
   describe('when archiveOnSoftDelete is enabled', function () {
     let archiveOnSoftDelete
     beforeEach(function overwriteSetting() {

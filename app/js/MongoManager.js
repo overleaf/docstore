@@ -81,14 +81,18 @@ module.exports = MongoManager = {
     )
   },
 
-  markDocAsDeleted(project_id, doc_id, callback) {
+  markDocAsDeleted(project_id, doc_id, name, callback) {
+    const update = { deleted: true }
+    if (name) {
+      update.name = name
+    }
     db.docs.updateOne(
       {
         _id: ObjectId(doc_id),
         project_id: ObjectId(project_id)
       },
       {
-        $set: { deleted: true }
+        $set: update
       },
       callback
     )

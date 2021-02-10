@@ -116,12 +116,14 @@ module.exports = DocstoreClient = {
   },
 
   deleteDoc(project_id, doc_id, callback) {
-    if (callback == null) {
-      callback = function (error, res, body) {}
-    }
-    return request.del(
+    this.deleteDocWithName(project_id, doc_id, 'main.tex', callback)
+  },
+
+  deleteDocWithName(project_id, doc_id, name, callback) {
+    request.del(
       {
-        url: `http://localhost:${settings.internal.docstore.port}/project/${project_id}/doc/${doc_id}`
+        url: `http://localhost:${settings.internal.docstore.port}/project/${project_id}/doc/${doc_id}`,
+        qs: { name }
       },
       callback
     )

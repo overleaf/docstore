@@ -17,7 +17,7 @@ const modulePath = require('path').join(
   '../../../app/js/MongoManager'
 )
 const { ObjectId } = require('mongodb')
-const { assert } = require('chai')
+const { assert, expect } = require('chai')
 
 describe('MongoManager', function () {
   beforeEach(function () {
@@ -185,7 +185,7 @@ describe('MongoManager', function () {
 
   describe('markDocAsDeleted', function () {
     beforeEach(function () {
-      this.db.docs.updateOne = sinon.stub().callsArgWith(2, this.stubbedErr)
+      this.db.docs.updateOne = sinon.stub().yields()
       return (this.oldRev = 77)
     })
 
@@ -193,6 +193,7 @@ describe('MongoManager', function () {
       return this.MongoManager.markDocAsDeleted(
         this.project_id,
         this.doc_id,
+        undefined,
         (err) => {
           const args = this.db.docs.updateOne.args[0]
           assert.deepEqual(args[0], {
@@ -205,15 +206,54 @@ describe('MongoManager', function () {
       )
     })
 
-    return it('should return the error', function (done) {
-      return this.MongoManager.markDocAsDeleted(
-        this.project_id,
-        this.doc_id,
-        (err) => {
-          err.should.equal(this.stubbedErr)
-          return done()
-        }
-      )
+    describe('when markDocAsDeleted errors', function () {
+      beforeEach(function () {
+        this.db.docs.updateOne = sinon.stub().callsArgWith(2, this.stubbedErr)
+      })
+      it('should return the error', function (done) {
+        this.db.docs.updateOne = sinon.stub().callsArgWith(2, this.stubbedErr)
+        return this.MongoManager.markDocAsDeleted(
+          this.project_id,
+          this.doc_id,
+          undefined,
+          (err) => {
+            err.should.equal(this.stubbedErr)
+            return done()
+          }
+        )
+      })
+    })
+
+    describe('when the doc name is set', function () {
+      it('should include the name in the update', function (done) {
+        this.MongoManager.markDocAsDeleted(
+          this.project_id,
+          this.doc_id,
+          'main.tex',
+          (err) => {
+            if (err) return done(err)
+            const args = this.db.docs.updateOne.args[0]
+            assert.equal(args[1].$set.name, 'main.tex')
+            done()
+          }
+        )
+      })
+    })
+
+    describe('when the doc name is not set', function () {
+      it('should not include the name in the update', function (done) {
+        this.MongoManager.markDocAsDeleted(
+          this.project_id,
+          this.doc_id,
+          undefined,
+          (err) => {
+            if (err) return done(err)
+            const args = this.db.docs.updateOne.args[0]
+            expect(args[1].$set).to.not.have.property('name')
+            done()
+          }
+        )
+      })
     })
   })
 
