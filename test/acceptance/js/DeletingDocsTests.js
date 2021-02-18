@@ -45,17 +45,30 @@ describe('Deleting a doc', function () {
     })
   })
 
-  it('should show as not deleted on /deleted', function (done) {
-    DocstoreClient.isDocDeleted(
-      this.project_id,
-      this.doc_id,
-      (error, res, body) => {
-        if (error) return done(error)
-        expect(res.statusCode).to.equal(200)
-        expect(body).to.have.property('deleted').to.equal(false)
-        done()
-      }
-    )
+  describe('before deleting anything', function () {
+    it('should show the doc as not deleted on /deleted', function (done) {
+      DocstoreClient.isDocDeleted(
+        this.project_id,
+        this.doc_id,
+        (error, res, body) => {
+          if (error) return done(error)
+          expect(res.statusCode).to.equal(200)
+          expect(body).to.have.property('deleted').to.equal(false)
+          done()
+        }
+      )
+    })
+
+    it('should show nothing in deleted docs response', function (done) {
+      DocstoreClient.getAllDeletedDocs(
+        this.project_id,
+        (error, deletedDocs) => {
+          if (error) return done(error)
+          expect(deletedDocs).to.deep.equal([])
+          done()
+        }
+      )
+    })
   })
 
   describe('when the doc exists', function () {
@@ -110,6 +123,19 @@ describe('Deleting a doc', function () {
       }, 1000)
     })
 
+    it('should show the doc in deleted docs response', function (done) {
+      DocstoreClient.getAllDeletedDocs(
+        this.project_id,
+        (error, deletedDocs) => {
+          if (error) return done(error)
+          expect(deletedDocs).to.deep.equal([
+            { _id: this.doc_id.toString(), name: 'main.tex' }
+          ])
+          done()
+        }
+      )
+    })
+
     describe('deleting a doc twice', function () {
       beforeEach('get doc before 2nd DELETE request', function (done) {
         db.docs.find({ _id: this.doc_id }).toArray((error, docs) => {
@@ -142,6 +168,89 @@ describe('Deleting a doc', function () {
         })
       })
     })
+
+    describe('after deleting multiple docs', function () {
+      beforeEach('create doc2', function (done) {
+        this.doc_id2 = ObjectId()
+        DocstoreClient.createDoc(
+          this.project_id,
+          this.doc_id2,
+          this.lines,
+          this.version,
+          this.ranges,
+          done
+        )
+      })
+      beforeEach('delete doc2', function (done) {
+        DocstoreClient.deleteDocWithName(
+          this.project_id,
+          this.doc_id2,
+          'two.tex',
+          done
+        )
+      })
+      beforeEach('create doc3', function (done) {
+        this.doc_id3 = ObjectId()
+        DocstoreClient.createDoc(
+          this.project_id,
+          this.doc_id3,
+          this.lines,
+          this.version,
+          this.ranges,
+          done
+        )
+      })
+      beforeEach('delete doc3', function (done) {
+        DocstoreClient.deleteDocWithName(
+          this.project_id,
+          this.doc_id3,
+          'three.tex',
+          done
+        )
+      })
+      it('should show all the docs as deleted', function (done) {
+        DocstoreClient.getAllDeletedDocs(
+          this.project_id,
+          (error, deletedDocs) => {
+            if (error) return done(error)
+
+            expect(deletedDocs).to.deep.equal([
+              { _id: this.doc_id3.toString(), name: 'three.tex' },
+              { _id: this.doc_id2.toString(), name: 'two.tex' },
+              { _id: this.doc_id.toString(), name: 'main.tex' }
+            ])
+            done()
+          }
+        )
+      })
+
+      describe('with one more than max_deleted_docs permits', function () {
+        let maxDeletedDocsBefore
+        beforeEach(function () {
+          maxDeletedDocsBefore = Settings.max_deleted_docs
+          Settings.max_deleted_docs = 2
+        })
+        afterEach(function () {
+          Settings.max_deleted_docs = maxDeletedDocsBefore
+        })
+
+        it('should omit the first deleted doc', function (done) {
+          DocstoreClient.getAllDeletedDocs(
+            this.project_id,
+            (error, deletedDocs) => {
+              if (error) return done(error)
+
+              expect(deletedDocs).to.deep.equal([
+                { _id: this.doc_id3.toString(), name: 'three.tex' },
+                { _id: this.doc_id2.toString(), name: 'two.tex' }
+                // dropped main.tex
+              ])
+              done()
+            }
+          )
+        })
+      })
+    })
   })
 
   describe('when providing a doc name in the delete request', function () {
@@ -161,6 +270,19 @@ describe('Deleting a doc', function () {
         done()
       })
     })
+
+    it('should show the doc in the deleted docs response', function (done) {
+      DocstoreClient.getAllDeletedDocs(
+        this.project_id,
+        (error, deletedDocs) => {
+          if (error) return done(error)
+          expect(deletedDocs).to.deep.equal([
+            { _id: this.doc_id.toString(), name: 'wombat.tex' }
+          ])
+          done()
+        }
+      )
+    })
   })
 
   describe('when providing no doc name in the delete request', function () {
@@ -174,6 +296,17 @@ describe('Deleting a doc', function () {
         expect(docs[0]).to.not.have.property('name')
         done()
       })
+    })
+
+    it('should not show the doc in the deleted docs response', function (done) {
+      DocstoreClient.getAllDeletedDocs(
+        this.project_id,
+        (error, deletedDocs) => {
+          if (error) return done(error)
+          expect(deletedDocs).to.deep.equal([])
+          done()
+        }
+      )
     })
   })
 
