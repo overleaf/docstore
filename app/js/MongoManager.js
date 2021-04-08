@@ -59,7 +59,9 @@ module.exports = MongoManager = {
     }
     db.docs
       .find(query, {
-        projection: filter
+        projection: filter,
+        // use a specific index
+        hint: 'project_id_1'
       })
       .toArray(callback)
   },
@@ -69,7 +71,11 @@ module.exports = MongoManager = {
       project_id: ObjectId(project_id.toString()),
       inS3: true
     }
-    db.docs.find(query).toArray(callback)
+    const options = {
+      // use a specific index
+      hint: 'project_id_1_inS3_1'
+    }
+    db.docs.find(query, options).toArray(callback)
   },
 
   getNonDeletedArchivedProjectDocs(project_id, callback) {
@@ -78,7 +84,11 @@ module.exports = MongoManager = {
       deleted: { $ne: true },
       inS3: true
     }
-    db.docs.find(query).toArray(callback)
+    const options = {
+      // use a specific index
+      hint: 'project_id_1_inS3_1'
+    }
+    db.docs.find(query, options).toArray(callback)
   },
 
   upsertIntoDocCollection(project_id, doc_id, updates, callback) {

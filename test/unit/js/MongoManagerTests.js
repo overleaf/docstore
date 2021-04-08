@@ -127,7 +127,8 @@ describe('MongoManager', function () {
               deleted: { $ne: true }
             },
             {
-              projection: this.filter
+              projection: this.filter,
+              hint: 'project_id_1'
             }
           )
           .should.equal(true)
@@ -157,7 +158,8 @@ describe('MongoManager', function () {
               project_id: ObjectId(this.project_id)
             },
             {
-              projection: this.filter
+              projection: this.filter,
+              hint: 'project_id_1'
             }
           )
           .should.equal(true)
