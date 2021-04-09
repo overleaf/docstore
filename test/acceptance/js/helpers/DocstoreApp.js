@@ -12,9 +12,17 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 const app = require('../../../../app')
-const { waitForDb } = require('../../../../app/js/mongodb')
+const { db, waitForDb } = require('../../../../app/js/mongodb')
 require('logger-sharelatex').logger.level('error')
 const settings = require('settings-sharelatex')
+
+before(waitForDb)
+before('create indexes', async function () {
+  await db.docs.createIndexes([
+    { name: 'project_id_1', key: { project_id: 1 } },
+    { name: 'project_id_1_inS3_1', key: { project_id: 1, inS3: 1 } }
+  ])
+})
 
 module.exports = {
   running: false,
