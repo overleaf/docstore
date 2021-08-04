@@ -42,11 +42,11 @@ describe('MongoManager', function () {
     beforeEach(function () {
       this.doc = { name: 'mock-doc' }
       this.db.docs.findOne = sinon.stub().callsArgWith(2, null, this.doc)
-      this.filter = { lines: true }
+      this.projection = { lines: true }
       return this.MongoManager.findDoc(
         this.project_id,
         this.doc_id,
-        this.filter,
+        this.projection,
         this.callback
       )
     })
@@ -59,7 +59,7 @@ describe('MongoManager', function () {
             project_id: ObjectId(this.project_id),
           },
           {
-            projection: this.filter,
+            projection: this.projection,
           }
         )
         .should.equal(true)
@@ -99,7 +99,7 @@ describe('MongoManager', function () {
 
   describe('getProjectsDocs', function () {
     beforeEach(function () {
-      this.filter = { lines: true }
+      this.projection = { lines: true }
       this.doc1 = { name: 'mock-doc1' }
       this.doc2 = { name: 'mock-doc2' }
       this.doc3 = { name: 'mock-doc3' }
@@ -116,7 +116,7 @@ describe('MongoManager', function () {
         return this.MongoManager.getProjectsDocs(
           this.project_id,
           { include_deleted: false },
-          this.filter,
+          this.projection,
           this.callback
         )
       })
@@ -129,7 +129,7 @@ describe('MongoManager', function () {
               deleted: { $ne: true },
             },
             {
-              projection: this.filter,
+              projection: this.projection,
             }
           )
           .should.equal(true)
@@ -147,7 +147,7 @@ describe('MongoManager', function () {
         return this.MongoManager.getProjectsDocs(
           this.project_id,
           { include_deleted: true },
-          this.filter,
+          this.projection,
           this.callback
         )
       })
@@ -159,7 +159,7 @@ describe('MongoManager', function () {
               project_id: ObjectId(this.project_id),
             },
             {
-              projection: this.filter,
+              projection: this.projection,
             }
           )
           .should.equal(true)
@@ -175,7 +175,7 @@ describe('MongoManager', function () {
 
   describe('getProjectsDeletedDocs', function () {
     beforeEach(function (done) {
-      this.filter = { name: true }
+      this.projection = { name: true }
       this.doc1 = { _id: '1', name: 'mock-doc1.tex' }
       this.doc2 = { _id: '2', name: 'mock-doc2.tex' }
       this.doc3 = { _id: '3', name: 'mock-doc3.tex' }
@@ -185,7 +185,7 @@ describe('MongoManager', function () {
       this.callback.callsFake(done)
       this.MongoManager.getProjectsDeletedDocs(
         this.project_id,
-        this.filter,
+        this.projection,
         this.callback
       )
     })
@@ -202,7 +202,7 @@ describe('MongoManager', function () {
     it('should filter, sort by deletedAt and limit', function () {
       this.db.docs.find
         .calledWith(sinon.match.any, {
-          projection: this.filter,
+          projection: this.projection,
           sort: { deletedAt: -1 },
           limit: 42,
         })

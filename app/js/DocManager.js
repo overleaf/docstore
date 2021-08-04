@@ -205,11 +205,11 @@ module.exports = DocManager = {
     )
   },
 
-  getAllDeletedDocs(project_id, filter, callback) {
-    MongoManager.getProjectsDeletedDocs(project_id, filter, callback)
+  getAllDeletedDocs(project_id, projection, callback) {
+    MongoManager.getProjectsDeletedDocs(project_id, projection, callback)
   },
 
-  getAllNonDeletedDocs(project_id, filter, callback) {
+  getAllNonDeletedDocs(project_id, projection, callback) {
     if (callback == null) {
       callback = function (error, docs) {}
     }
@@ -220,7 +220,7 @@ module.exports = DocManager = {
       return MongoManager.getProjectsDocs(
         project_id,
         { include_deleted: false },
-        filter,
+        projection,
         function (error, docs) {
           if (typeof err !== 'undefined' && err !== null) {
             return callback(error)

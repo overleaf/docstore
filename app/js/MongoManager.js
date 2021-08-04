@@ -19,7 +19,7 @@ const Errors = require('./Errors')
 const { promisify } = require('util')
 
 module.exports = MongoManager = {
-  findDoc(project_id, doc_id, filter, callback) {
+  findDoc(project_id, doc_id, projection, callback) {
     if (callback == null) {
       callback = function (error, doc) {}
     }
@@ -29,13 +29,13 @@ module.exports = MongoManager = {
         project_id: ObjectId(project_id.toString()),
       },
       {
-        projection: filter,
+        projection
       },
       callback
     )
   },
 
-  getProjectsDeletedDocs(project_id, filter, callback) {
+  getProjectsDeletedDocs(project_id, projection, callback) {
     db.docs
       .find(
         {
@@ -43,7 +43,7 @@ module.exports = MongoManager = {
           deleted: true,
         },
         {
-          projection: filter,
+          projection,
           sort: { deletedAt: -1 },
           limit: Settings.max_deleted_docs,
         }
@@ -51,13 +51,13 @@ module.exports = MongoManager = {
       .toArray(callback)
   },
 
-  getProjectsDocs(project_id, options, filter, callback) {
+  getProjectsDocs(project_id, options, projection, callback) {
     const query = { project_id: ObjectId(project_id.toString()) }
     if (!options.include_deleted) {
       query.deleted = { $ne: true }
     }
     const queryOptions = {
-      projection: filter,
+      projection
     }
     if (options.limit) {
       queryOptions.limit = options.limit

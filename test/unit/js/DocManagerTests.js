@@ -325,17 +325,17 @@ describe('DocManager', function () {
         this.DocArchiveManager.unArchiveAllDocs = sinon
           .stub()
           .callsArgWith(1, null, this.docs)
-        this.filter = { lines: true }
+        this.projection = { lines: true }
         return this.DocManager.getAllNonDeletedDocs(
           this.project_id,
-          this.filter,
+          this.projection,
           this.callback
         )
       })
 
       it('should get the project from the database', function () {
         return this.MongoManager.getProjectsDocs
-          .calledWith(this.project_id, { include_deleted: false }, this.filter)
+          .calledWith(this.project_id, { include_deleted: false }, this.projection)
           .should.equal(true)
       })
 
@@ -354,7 +354,7 @@ describe('DocManager', function () {
           .callsArgWith(1, null)
         return this.DocManager.getAllNonDeletedDocs(
           this.project_id,
-          this.filter,
+          this.projection,
           this.callback
         )
       })
